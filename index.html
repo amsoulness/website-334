@@ -3,189 +3,273 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Emmanuel Cherian | Advanced Interactive Portfolio</title>
-    <link href="https://fonts.googleapis.com/css2?family=Italianno&family=Montserrat:wght@100;300;600;900&family=Fira+Code:wght@300;500&display=swap" rel="stylesheet">
+    <title>Emmanuel | Nexus Protocol</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;500&family=Orbitron:wght@400;900&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
     <style>
         :root {
-            --accent: #e5b3a3;
-            --bg: #050103;
-            --glass: rgba(255, 255, 255, 0.02);
-            --terminal-bg: rgba(0, 0, 0, 0.8);
+            --neon-cyan: #00f2ff;
+            --neon-purple: #bc13fe;
+            --tech-bg: #020205;
+            --panel: rgba(0, 242, 255, 0.03);
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; scroll-behavior: smooth; }
-        body { background: var(--bg); color: #fff; font-family: 'Montserrat', sans-serif; overflow-x: hidden; }
-
-        #canvas-container { position: fixed; inset: 0; z-index: -1; }
-
-        /* --- INTERACTIVE CURSOR --- */
-        #custom-cursor {
-            position: fixed; width: 20px; height: 20px;
-            border: 1px solid var(--accent); border-radius: 50%;
-            pointer-events: none; z-index: 10000; transition: transform 0.2s ease;
-            mix-blend-mode: difference;
-        }
-
-        /* --- GLASS SECTIONS --- */
-        section { min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 80px 5vw; }
+        * { margin: 0; padding: 0; box-sizing: border-box; cursor: crosshair; }
         
-        .glass-card {
-            width: 100%; max-width: 1100px;
-            background: var(--glass); backdrop-filter: blur(50px);
-            border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 40px;
-            padding: 60px; text-align: center; transform-style: preserve-3d;
-            transition: all 0.8s cubic-bezier(0.2, 1, 0.3, 1);
+        body {
+            background: var(--tech-bg);
+            color: #fff;
+            font-family: 'Fira Code', monospace;
+            overflow-x: hidden;
         }
 
-        h1 { font-family: 'Italianno', cursive; font-size: clamp(4rem, 10vw, 6rem); color: var(--accent); }
-
-        /* --- THE COMMAND TERMINAL --- */
-        .terminal-window {
-            width: 100%; max-width: 800px; background: var(--terminal-bg);
-            border: 1px solid var(--accent); border-radius: 15px;
-            margin: 40px auto; padding: 20px; text-align: left;
-            font-family: 'Fira Code', monospace; font-size: 0.8rem;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        #nexus-canvas {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
         }
 
-        .terminal-header { display: flex; gap: 8px; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
-        .dot { width: 12px; height: 12px; border-radius: 50%; }
-        .red { background: #ff5f56; } .yellow { background: #ffbd2e; } .green { background: #27c93f; }
-
-        .terminal-body { height: 200px; overflow-y: auto; color: #aaa; }
-        .command-input { background: transparent; border: none; color: var(--accent); outline: none; width: 100%; font-family: 'Fira Code'; }
-        
-        .typewriter-text { border-right: 2px solid var(--accent); white-space: nowrap; overflow: hidden; }
-
-        /* --- BUTTONS --- */
-        .glow-btn {
-            padding: 15px 40px; border: 1px solid var(--accent);
-            color: #fff; text-decoration: none; border-radius: 50px;
-            text-transform: uppercase; letter-spacing: 3px; font-size: 0.7rem;
-            transition: 0.4s; cursor: pointer; background: transparent;
+        /* --- HUD ELEMENTS --- */
+        .hud-line {
+            position: fixed;
+            background: var(--neon-cyan);
+            opacity: 0.2;
+            z-index: 100;
         }
-        .glow-btn:hover { background: var(--accent); color: var(--bg); box-shadow: 0 0 30px var(--accent); }
+        .v-line { width: 1px; height: 100vh; top: 0; left: 50px; }
+        .h-line { height: 1px; width: 100vw; top: 50px; left: 0; }
 
+        /* --- INTERACTIVE SECTIONS --- */
+        section {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 80px;
+        }
+
+        .tech-panel {
+            background: var(--panel);
+            backdrop-filter: blur(15px);
+            border: 1px solid var(--neon-cyan);
+            border-left: 5px solid var(--neon-cyan);
+            padding: 40px;
+            max-width: 800px;
+            position: relative;
+            box-shadow: 0 0 50px rgba(0, 242, 255, 0.1);
+            clip-path: polygon(0 0, 100% 0, 100% 90%, 95% 100%, 0 100%);
+        }
+
+        .glitch-text {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 3.5rem;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            color: var(--neon-cyan);
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        /* --- TECH TREE INTERACTION --- */
+        .tech-tree {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .node {
+            border: 1px solid rgba(0, 242, 255, 0.3);
+            padding: 15px;
+            transition: 0.3s;
+            background: rgba(0,0,0,0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .node:hover {
+            border-color: var(--neon-purple);
+            transform: translateX(10px);
+            background: rgba(188, 19, 254, 0.1);
+        }
+
+        .node::before {
+            content: "";
+            position: absolute;
+            left: -100%;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 242, 255, 0.2), transparent);
+            transition: 0.5s;
+        }
+
+        .node:hover::before { left: 100%; }
+
+        .status-tag {
+            font-size: 0.6rem;
+            color: var(--neon-purple);
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        /* --- DATA BUTTONS --- */
+        .btn-nexus {
+            margin-top: 30px;
+            padding: 15px 30px;
+            background: transparent;
+            border: 1px solid var(--neon-cyan);
+            color: var(--neon-cyan);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.8rem;
+            letter-spacing: 3px;
+            transition: 0.3s;
+            text-transform: uppercase;
+        }
+
+        .btn-nexus:hover {
+            background: var(--neon-cyan);
+            color: #000;
+            box-shadow: 0 0 30px var(--neon-cyan);
+        }
+
+        /* Scanline Effect */
+        body::after {
+            content: " ";
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), 
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+            background-size: 100% 3px, 3px 100%;
+            z-index: 1000;
+            pointer-events: none;
+        }
     </style>
 </head>
 <body>
 
-    <div id="custom-cursor"></div>
-    <div id="canvas-container"></div>
+    <div class="hud-line v-line"></div>
+    <div class="hud-line h-line"></div>
+    <canvas id="nexus-canvas"></canvas>
 
     <section id="hero">
-        <div class="glass-card">
-            <h2>BCA @ AI & ML Specialization</h2>
-            <h1>Emmanuel Cherian</h1>
-            <p style="opacity: 0.7; letter-spacing: 2px;">Building intelligent digital sanctuaries.</p>
+        <div class="tech-panel">
+            <span class="status-tag">STATUS: ONLINE // BCA_STUDENT_YR2</span>
+            <h1 class="glitch-text" data-text="EMMANUEL">EMMANUEL</h1>
+            <p>> SPECIALIZATION: ARTIFICIAL_INTELLIGENCE & MACHINE_LEARNING</p>
+            <p style="margin-top: 10px; opacity: 0.6; font-size: 0.8rem;">
+                Bridging the gap between neural architectures and digital front-ends.
+            </p>
             
-            <div class="terminal-window">
-                <div class="terminal-header">
-                    <div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div>
-                    <span style="margin-left: 10px; opacity: 0.5;">emmanuel_os — terminal</span>
+            <div class="tech-tree">
+                <div class="node">
+                    <span class="status-tag">LVL 85</span>
+                    <p>PYTHON_CORE</p>
                 </div>
-                <div class="terminal-body" id="terminal-content">
-                    <div>> System initialized...</div>
-                    <div>> Welcome, visitor. Type 'help' to see available commands.</div>
+                <div class="node">
+                    <span class="status-tag">LVL 70</span>
+                    <p>NEURAL_NETS</p>
                 </div>
-                <div style="display: flex; gap: 10px; margin-top: 10px;">
-                    <span style="color: var(--accent);">></span>
-                    <input type="text" class="command-input" id="terminal-input" placeholder="Type here..." autofocus>
+                <div class="node">
+                    <span class="status-tag">LVL 90</span>
+                    <p>UI_DYNAMICS</p>
+                </div>
+                <div class="node">
+                    <span class="status-tag">LVL 75</span>
+                    <p>OOP_LOGIC</p>
                 </div>
             </div>
+
+            <button class="btn-nexus" onclick="document.getElementById('tech').scrollIntoView()">Initialize_Deep_Scan</button>
         </div>
     </section>
 
     <section id="tech">
-        <div class="glass-card">
-            <h1>The Core</h1>
-            <div style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; margin-top: 30px;">
-                <button class="glow-btn" onmouseover="changeScene('python')">Python</button>
-                <button class="glow-btn" onmouseover="changeScene('ml')">Machine Learning</button>
-                <button class="glow-btn" onmouseover="changeScene('web')">Modern Web</button>
-            </div>
+        <div class="tech-panel">
+            <h1 class="glitch-text">NETWORK</h1>
+            <p>> LINKEDIN_AUTH_SUCCESS: <a href="https://www.linkedin.com/in/emmanuel-cherian-525714379" style="color:var(--neon-purple);">VIEW_PROFILE</a></p>
+            <div id="data-stream" style="margin-top:20px; height: 150px; overflow: hidden; font-size: 0.7rem; color: var(--neon-cyan); opacity: 0.5;">
+                </div>
         </div>
     </section>
 
     <script>
-        // --- THREE.JS INTERACTIVE SCENE ---
+        // --- THREE.JS NEURAL NETWORK BACKGROUND ---
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('nexus-canvas'), antialias: true, alpha: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
-        document.getElementById('canvas-container').appendChild(renderer.domElement);
 
-        const starGeo = new THREE.BufferGeometry();
-        const stars = new Float32Array(3000 * 3);
-        for(let i=0; i<9000; i++) stars[i] = (Math.random() - 0.5) * 10;
-        starGeo.setAttribute('position', new THREE.BufferAttribute(stars, 3));
-        const starMat = new THREE.PointsMaterial({ size: 0.005, color: 0xffffff });
-        const starMesh = new THREE.Points(starGeo, starMat);
-        scene.add(starMesh);
-        camera.position.z = 3;
+        const group = new THREE.Group();
+        const particlesGeometry = new THREE.BufferGeometry();
+        const particlesCount = 100;
+        const posArray = new Float32Array(particlesCount * 3);
+
+        for(let i=0; i<particlesCount * 3; i++) {
+            posArray[i] = (Math.random() - 0.5) * 10;
+        }
+        particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+
+        const particlesMaterial = new THREE.PointsMaterial({ size: 0.05, color: 0x00f2ff });
+        const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
+        group.add(particlesMesh);
+        scene.add(group);
+        camera.position.z = 5;
+
+        // Lines connecting dots
+        const lineMaterial = new THREE.LineBasicMaterial({ color: 0x00f2ff, transparent: true, opacity: 0.2 });
+        function updateLines() {
+            // Complex logic to draw lines between nearby nodes
+        }
 
         function animate() {
             requestAnimationFrame(animate);
-            starMesh.rotation.y += 0.001;
+            group.rotation.y += 0.002;
+            group.rotation.x += 0.001;
             renderer.render(scene, camera);
         }
         animate();
 
-        // --- TERMINAL LOGIC ---
-        const input = document.getElementById('terminal-input');
-        const content = document.getElementById('terminal-content');
+        // --- GLITCH EFFECT LOGIC ---
+        const glitchText = document.querySelector('.glitch-text');
+        const chars = "ABCDEFGHIJKLMN0123456789$#@%";
+        let original = glitchText.innerText;
 
-        input.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                const cmd = input.value.toLowerCase();
-                const div = document.createElement('div');
-                div.style.color = '#fff';
-                div.innerHTML = `<span style="color: #e5b3a3;">> ${cmd}</span>`;
-                content.appendChild(div);
-
-                const response = document.createElement('div');
-                switch(cmd) {
-                    case 'help': response.innerHTML = "Available: 'about', 'skills', 'clear', 'whoami'"; break;
-                    case 'about': response.innerHTML = "Emmanuel: 2nd Year BCA Student. AI/ML Enthusiast. Design-focused Dev."; break;
-                    case 'skills': response.innerHTML = "Python, Java, Three.js, Neural Networks, UI Design."; break;
-                    case 'whoami': response.innerHTML = "A seeker of logic and beauty."; break;
-                    case 'clear': content.innerHTML = ""; break;
-                    default: response.innerHTML = "Command not recognized. Type 'help'.";
-                }
-                content.appendChild(response);
-                input.value = "";
-                content.scrollTop = content.scrollHeight;
-            }
+        glitchText.addEventListener('mouseenter', () => {
+            let iterations = 0;
+            const interval = setInterval(() => {
+                glitchText.innerText = original.split("").map((letter, index) => {
+                    if(index < iterations) return original[index];
+                    return chars[Math.floor(Math.random() * 26)];
+                }).join("");
+                if(iterations >= original.length) clearInterval(interval);
+                iterations += 1/3;
+            }, 30);
         });
 
-        // --- INTERACTIVE MOUSE ELEMENTS ---
-        const cursor = document.getElementById('custom-cursor');
-        document.addEventListener('mousemove', (e) => {
-            cursor.style.left = e.clientX + 'px';
-            cursor.style.top = e.clientY + 'px';
-            
-            // Mouse Parallax for Three.js
-            starMesh.rotation.x = e.clientY * 0.0001;
-            starMesh.rotation.y = e.clientX * 0.0001;
-        });
+        // --- DATA STREAM LOGS ---
+        const stream = document.getElementById('data-stream');
+        const logs = [
+            "Initializing Neural_Layers...",
+            "Fetching GitHub_Repo_Data...",
+            "Compiling Python_Abstract_Classes...",
+            "Injecting Neon_Style_Sheet...",
+            "Handshake with Emmanuel_LinkedIn...",
+            "BCA_AddOn: AI/ML Status ACTIVE"
+        ];
+        setInterval(() => {
+            const line = document.createElement('div');
+            line.innerText = `[LOG] ${logs[Math.floor(Math.random()*logs.length)]}`;
+            stream.prepend(line);
+            if(stream.children.length > 8) stream.lastChild.remove();
+        }, 1000);
 
-        // Click interaction: Burst stars
-        document.addEventListener('mousedown', () => {
-            cursor.style.transform = 'scale(2.5)';
-            starMesh.scale.set(1.1, 1.1, 1.1);
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
         });
-        document.addEventListener('mouseup', () => {
-            cursor.style.transform = 'scale(1)';
-            starMesh.scale.set(1, 1, 1);
-        });
-
-        function changeScene(type) {
-            if(type === 'python') starMat.color.setHex(0x3776ab);
-            if(type === 'ml') starMat.color.setHex(0xe5b3a3);
-            if(type === 'web') starMat.color.setHex(0x61dbfb);
-        }
     </script>
 </body>
 </html>
