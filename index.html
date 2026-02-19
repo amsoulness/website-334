@@ -3,272 +3,241 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Emmanuel | Nexus Protocol</title>
-    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;500&family=Orbitron:wght@400;900&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <title>Emmanuel | Liquid Portfolio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&family=Montserrat:wght@100;400;900&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 
     <style>
         :root {
-            --neon-cyan: #00f2ff;
-            --neon-purple: #bc13fe;
-            --tech-bg: #020205;
-            --panel: rgba(0, 242, 255, 0.03);
+            --accent: #fff;
+            --bg: #000;
+            --glass: rgba(255, 255, 255, 0.05);
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; cursor: crosshair; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body {
-            background: var(--tech-bg);
+            background: var(--bg);
             color: #fff;
-            font-family: 'Fira Code', monospace;
+            font-family: 'Montserrat', sans-serif;
             overflow-x: hidden;
+            cursor: none; /* We'll use a custom fluid cursor */
         }
 
-        #nexus-canvas {
+        /* --- FLUID BACKGROUND --- */
+        #fluid-bg {
             position: fixed;
             inset: 0;
             z-index: -1;
+            filter: blur(80px);
+            opacity: 0.6;
         }
 
-        /* --- HUD ELEMENTS --- */
-        .hud-line {
+        .blob {
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            background: linear-gradient(45deg, #222, #555);
+            border-radius: 50%;
+            transition: all 1s ease;
+        }
+
+        /* --- CUSTOM CURSOR --- */
+        #cursor-ball {
             position: fixed;
-            background: var(--neon-cyan);
-            opacity: 0.2;
+            width: 40px;
+            height: 40px;
+            border: 1px solid rgba(255,255,255,0.5);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            transition: transform 0.1s ease;
+        }
+
+        /* --- SCROLLING CONTENT --- */
+        nav {
+            position: fixed;
+            top: 40px; width: 100%;
+            padding: 0 60px;
+            display: flex;
+            justify-content: space-between;
             z-index: 100;
         }
-        .v-line { width: 1px; height: 100vh; top: 0; left: 50px; }
-        .h-line { height: 1px; width: 100vw; top: 50px; left: 0; }
 
-        /* --- INTERACTIVE SECTIONS --- */
+        .nav-brand { font-family: 'Syncopate', sans-serif; font-weight: 700; font-size: 0.8rem; letter-spacing: 5px; }
+
         section {
-            min-height: 100vh;
+            height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
+            perspective: 1000px;
+        }
+
+        .monolith {
+            width: 80vw;
+            max-width: 900px;
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 2px; /* Sharp professional edges */
             padding: 80px;
-        }
-
-        .tech-panel {
-            background: var(--panel);
-            backdrop-filter: blur(15px);
-            border: 1px solid var(--neon-cyan);
-            border-left: 5px solid var(--neon-cyan);
-            padding: 40px;
-            max-width: 800px;
             position: relative;
-            box-shadow: 0 0 50px rgba(0, 242, 255, 0.1);
-            clip-path: polygon(0 0, 100% 0, 100% 90%, 95% 100%, 0 100%);
+            transform-style: preserve-3d;
         }
 
-        .glitch-text {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 3.5rem;
+        h1 {
+            font-family: 'Syncopate', sans-serif;
+            font-size: clamp(2rem, 8vw, 5rem);
             text-transform: uppercase;
-            letter-spacing: 5px;
-            color: var(--neon-cyan);
+            line-height: 0.9;
             margin-bottom: 20px;
-            position: relative;
+            color: transparent;
+            -webkit-text-stroke: 1px #fff;
         }
 
-        /* --- TECH TREE INTERACTION --- */
-        .tech-tree {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-top: 30px;
-        }
+        h1 span { color: #fff; }
 
-        .node {
-            border: 1px solid rgba(0, 242, 255, 0.3);
-            padding: 15px;
-            transition: 0.3s;
-            background: rgba(0,0,0,0.5);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .node:hover {
-            border-color: var(--neon-purple);
-            transform: translateX(10px);
-            background: rgba(188, 19, 254, 0.1);
-        }
-
-        .node::before {
-            content: "";
-            position: absolute;
-            left: -100%;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(0, 242, 255, 0.2), transparent);
-            transition: 0.5s;
-        }
-
-        .node:hover::before { left: 100%; }
-
-        .status-tag {
-            font-size: 0.6rem;
-            color: var(--neon-purple);
-            display: block;
-            margin-bottom: 5px;
-        }
-
-        /* --- DATA BUTTONS --- */
-        .btn-nexus {
-            margin-top: 30px;
-            padding: 15px 30px;
-            background: transparent;
-            border: 1px solid var(--neon-cyan);
-            color: var(--neon-cyan);
-            font-family: 'Orbitron', sans-serif;
-            font-size: 0.8rem;
-            letter-spacing: 3px;
-            transition: 0.3s;
+        .desc {
+            font-weight: 100;
+            letter-spacing: 4px;
             text-transform: uppercase;
+            font-size: 0.7rem;
+            margin-bottom: 40px;
+            opacity: 0.6;
         }
 
-        .btn-nexus:hover {
-            background: var(--neon-cyan);
+        /* --- TECH TILES --- */
+        .tech-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .tile {
+            background: var(--bg);
+            padding: 30px;
+            text-align: left;
+            transition: 0.4s;
+        }
+
+        .tile:hover {
+            background: #fff;
             color: #000;
-            box-shadow: 0 0 30px var(--neon-cyan);
         }
 
-        /* Scanline Effect */
-        body::after {
-            content: " ";
+        .tile h3 { font-size: 0.6rem; letter-spacing: 2px; text-transform: uppercase; }
+
+        /* --- PROGRESS BAR --- */
+        .progress-wrap {
             position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), 
-                        linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
-            background-size: 100% 3px, 3px 100%;
-            z-index: 1000;
-            pointer-events: none;
+            right: 40px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
         }
+
+        .dot { width: 4px; height: 4px; background: #333; border-radius: 50%; transition: 0.4s; }
+        .dot.active { background: #fff; transform: scale(2.5); }
+
     </style>
 </head>
 <body>
 
-    <div class="hud-line v-line"></div>
-    <div class="hud-line h-line"></div>
-    <canvas id="nexus-canvas"></canvas>
+    <div id="cursor-ball"></div>
+    <div id="fluid-bg">
+        <div class="blob" id="blob1"></div>
+        <div class="blob" id="blob2"></div>
+    </div>
 
-    <section id="hero">
-        <div class="tech-panel">
-            <span class="status-tag">STATUS: ONLINE // BCA_STUDENT_YR2</span>
-            <h1 class="glitch-text" data-text="EMMANUEL">EMMANUEL</h1>
-            <p>> SPECIALIZATION: ARTIFICIAL_INTELLIGENCE & MACHINE_LEARNING</p>
-            <p style="margin-top: 10px; opacity: 0.6; font-size: 0.8rem;">
-                Bridging the gap between neural architectures and digital front-ends.
+    <nav>
+        <div class="nav-brand">EMMANUEL.AI</div>
+        <div class="nav-brand" style="opacity: 0.4;">V.2.0.26</div>
+    </nav>
+
+    <div class="progress-wrap">
+        <div class="dot active"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+    </div>
+
+    <section>
+        <div class="monolith" id="card-hero">
+            <div class="desc">BCA Student // AI Specialty</div>
+            <h1>The <span>Neural</span><br>Architect</h1>
+            <p style="margin-top: 30px; opacity: 0.4; font-size: 0.8rem; max-width: 400px;">
+                Emmanuel Cherian: Exploring the friction between machine intelligence and human design.
             </p>
-            
-            <div class="tech-tree">
-                <div class="node">
-                    <span class="status-tag">LVL 85</span>
-                    <p>PYTHON_CORE</p>
-                </div>
-                <div class="node">
-                    <span class="status-tag">LVL 70</span>
-                    <p>NEURAL_NETS</p>
-                </div>
-                <div class="node">
-                    <span class="status-tag">LVL 90</span>
-                    <p>UI_DYNAMICS</p>
-                </div>
-                <div class="node">
-                    <span class="status-tag">LVL 75</span>
-                    <p>OOP_LOGIC</p>
-                </div>
-            </div>
-
-            <button class="btn-nexus" onclick="document.getElementById('tech').scrollIntoView()">Initialize_Deep_Scan</button>
         </div>
     </section>
 
-    <section id="tech">
-        <div class="tech-panel">
-            <h1 class="glitch-text">NETWORK</h1>
-            <p>> LINKEDIN_AUTH_SUCCESS: <a href="https://www.linkedin.com/in/emmanuel-cherian-525714379" style="color:var(--neon-purple);">VIEW_PROFILE</a></p>
-            <div id="data-stream" style="margin-top:20px; height: 150px; overflow: hidden; font-size: 0.7rem; color: var(--neon-cyan); opacity: 0.5;">
-                </div>
+    <section>
+        <div class="monolith">
+            <div class="desc">Stack Intelligence</div>
+            <div class="tech-grid">
+                <div class="tile"><h3>Python</h3></div>
+                <div class="tile"><h3>Neural_Nets</h3></div>
+                <div class="tile"><h3>3D_DYNAMICS</h3></div>
+                <div class="tile"><h3>Deep_Learning</h3></div>
+                <div class="tile"><h3>Algorithm</h3></div>
+                <div class="tile"><h3>UI_Logic</h3></div>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <div class="monolith">
+            <div class="desc">Network Status</div>
+            <h1>Let's <span>Talk</span></h1>
+            <a href="https://www.linkedin.com/in/emmanuel-cherian-525714379" target="_blank" style="color: #fff; text-decoration: none; border-bottom: 1px solid #fff; padding-bottom: 5px; font-size: 0.8rem; letter-spacing: 5px;">LINKEDIN</a>
         </div>
     </section>
 
     <script>
-        // --- THREE.JS NEURAL NETWORK BACKGROUND ---
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('nexus-canvas'), antialias: true, alpha: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
+        // --- FLUID MOUSE FOLLOW ---
+        const ball = document.getElementById('cursor-ball');
+        const b1 = document.getElementById('blob1');
+        const b2 = document.getElementById('blob2');
 
-        const group = new THREE.Group();
-        const particlesGeometry = new THREE.BufferGeometry();
-        const particlesCount = 100;
-        const posArray = new Float32Array(particlesCount * 3);
+        document.addEventListener('mousemove', (e) => {
+            // Ball follow
+            gsap.to(ball, { x: e.clientX - 20, y: e.clientY - 20, duration: 0.6, ease: "power2.out" });
+            
+            // Blobs react
+            gsap.to(b1, { x: e.clientX * 0.2, y: e.clientY * 0.2, duration: 2 });
+            gsap.to(b2, { x: window.innerWidth - e.clientX * 0.3, y: window.innerHeight - e.clientY * 0.3, duration: 2.5 });
 
-        for(let i=0; i<particlesCount * 3; i++) {
-            posArray[i] = (Math.random() - 0.5) * 10;
-        }
-        particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
-
-        const particlesMaterial = new THREE.PointsMaterial({ size: 0.05, color: 0x00f2ff });
-        const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
-        group.add(particlesMesh);
-        scene.add(group);
-        camera.position.z = 5;
-
-        // Lines connecting dots
-        const lineMaterial = new THREE.LineBasicMaterial({ color: 0x00f2ff, transparent: true, opacity: 0.2 });
-        function updateLines() {
-            // Complex logic to draw lines between nearby nodes
-        }
-
-        function animate() {
-            requestAnimationFrame(animate);
-            group.rotation.y += 0.002;
-            group.rotation.x += 0.001;
-            renderer.render(scene, camera);
-        }
-        animate();
-
-        // --- GLITCH EFFECT LOGIC ---
-        const glitchText = document.querySelector('.glitch-text');
-        const chars = "ABCDEFGHIJKLMN0123456789$#@%";
-        let original = glitchText.innerText;
-
-        glitchText.addEventListener('mouseenter', () => {
-            let iterations = 0;
-            const interval = setInterval(() => {
-                glitchText.innerText = original.split("").map((letter, index) => {
-                    if(index < iterations) return original[index];
-                    return chars[Math.floor(Math.random() * 26)];
-                }).join("");
-                if(iterations >= original.length) clearInterval(interval);
-                iterations += 1/3;
-            }, 30);
+            // 3D Monolith Tilt
+            const activeCard = document.querySelector('.monolith');
+            const xVal = (window.innerWidth / 2 - e.clientX) / 50;
+            const yVal = (window.innerHeight / 2 - e.clientY) / 50;
+            activeCard.style.transform = `rotateY(${xVal}deg) rotateX(${-yVal}deg)`;
         });
 
-        // --- DATA STREAM LOGS ---
-        const stream = document.getElementById('data-stream');
-        const logs = [
-            "Initializing Neural_Layers...",
-            "Fetching GitHub_Repo_Data...",
-            "Compiling Python_Abstract_Classes...",
-            "Injecting Neon_Style_Sheet...",
-            "Handshake with Emmanuel_LinkedIn...",
-            "BCA_AddOn: AI/ML Status ACTIVE"
-        ];
-        setInterval(() => {
-            const line = document.createElement('div');
-            line.innerText = `[LOG] ${logs[Math.floor(Math.random()*logs.length)]}`;
-            stream.prepend(line);
-            if(stream.children.length > 8) stream.lastChild.remove();
-        }, 1000);
+        // --- SCROLL SPY ---
+        window.addEventListener('scroll', () => {
+            const sections = document.querySelectorAll('section');
+            const dots = document.querySelectorAll('.dot');
+            let current = 0;
+            sections.forEach((s, i) => {
+                const top = s.getBoundingClientRect().top;
+                if (top < window.innerHeight / 2) current = i;
+            });
+            dots.forEach((d, i) => d.classList.toggle('active', i === current));
+        });
 
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
+        // --- CLICK EFFECT ---
+        document.addEventListener('mousedown', () => {
+            ball.style.transform = 'scale(0.5)';
+            document.body.style.backgroundColor = '#0a0a0a';
+        });
+        document.addEventListener('mouseup', () => {
+            ball.style.transform = 'scale(1)';
+            document.body.style.backgroundColor = '#000';
         });
     </script>
 </body>
