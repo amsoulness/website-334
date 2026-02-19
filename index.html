@@ -3,89 +3,189 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Amsoulness</title>
-    <link rel="stylesheet" href="style.css">
-    <script defer src="script.js"></script>
+    <title>Emmanuel Cherian | Advanced Interactive Portfolio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Italianno&family=Montserrat:wght@100;300;600;900&family=Fira+Code:wght@300;500&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <style>
+        :root {
+            --accent: #e5b3a3;
+            --bg: #050103;
+            --glass: rgba(255, 255, 255, 0.02);
+            --terminal-bg: rgba(0, 0, 0, 0.8);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; scroll-behavior: smooth; }
+        body { background: var(--bg); color: #fff; font-family: 'Montserrat', sans-serif; overflow-x: hidden; }
+
+        #canvas-container { position: fixed; inset: 0; z-index: -1; }
+
+        /* --- INTERACTIVE CURSOR --- */
+        #custom-cursor {
+            position: fixed; width: 20px; height: 20px;
+            border: 1px solid var(--accent); border-radius: 50%;
+            pointer-events: none; z-index: 10000; transition: transform 0.2s ease;
+            mix-blend-mode: difference;
+        }
+
+        /* --- GLASS SECTIONS --- */
+        section { min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 80px 5vw; }
+        
+        .glass-card {
+            width: 100%; max-width: 1100px;
+            background: var(--glass); backdrop-filter: blur(50px);
+            border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 40px;
+            padding: 60px; text-align: center; transform-style: preserve-3d;
+            transition: all 0.8s cubic-bezier(0.2, 1, 0.3, 1);
+        }
+
+        h1 { font-family: 'Italianno', cursive; font-size: clamp(4rem, 10vw, 6rem); color: var(--accent); }
+
+        /* --- THE COMMAND TERMINAL --- */
+        .terminal-window {
+            width: 100%; max-width: 800px; background: var(--terminal-bg);
+            border: 1px solid var(--accent); border-radius: 15px;
+            margin: 40px auto; padding: 20px; text-align: left;
+            font-family: 'Fira Code', monospace; font-size: 0.8rem;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+
+        .terminal-header { display: flex; gap: 8px; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
+        .dot { width: 12px; height: 12px; border-radius: 50%; }
+        .red { background: #ff5f56; } .yellow { background: #ffbd2e; } .green { background: #27c93f; }
+
+        .terminal-body { height: 200px; overflow-y: auto; color: #aaa; }
+        .command-input { background: transparent; border: none; color: var(--accent); outline: none; width: 100%; font-family: 'Fira Code'; }
+        
+        .typewriter-text { border-right: 2px solid var(--accent); white-space: nowrap; overflow: hidden; }
+
+        /* --- BUTTONS --- */
+        .glow-btn {
+            padding: 15px 40px; border: 1px solid var(--accent);
+            color: #fff; text-decoration: none; border-radius: 50px;
+            text-transform: uppercase; letter-spacing: 3px; font-size: 0.7rem;
+            transition: 0.4s; cursor: pointer; background: transparent;
+        }
+        .glow-btn:hover { background: var(--accent); color: var(--bg); box-shadow: 0 0 30px var(--accent); }
+
+    </style>
 </head>
 <body>
 
-    <header>
-        <nav>
-            <h1>Amsoulness</h1>
-            <ul>
-                <li><a href="#home">Home</a></li>
-                <li><a href="#about">About</a></li>
-                <li><a href="#connections">Social Media</a></li>
-                <li><a href="#contact">Contact</a></li>
-            </ul>
-            <button id="theme-toggle">🌙</button>
-        </nav>
-    </header>
+    <div id="custom-cursor"></div>
+    <div id="canvas-container"></div>
 
     <section id="hero">
-        <h2>Hello, I'm <span>Your Emmanuel Cherian(Amsoulness)</span> 👋</h2>
-        <p>Simple Developer | Open Source Contributor (Just Kidding)</p>
-    </section>
-
-    <section id="about" class="fade-in">
-        <h2>About Me</h2>
-        <p>Hi, <span>I'm Emmanuel Cherian, a developer learning C programming and web development. I enjoy building clean and functional websites with HTML. Always learning and improving.</span>
-</p>
-    </section>
-
-    <section id="connections" class="fade-in">
-        <h2>Social Media</h2>
-        <div class="grid">
-            <div class="card">Whatsapp</div>
-            <div class="card">Instagram</div>
-            <div class="card">Email Me</div>
-            <div class="card">Youtube</div>
+        <div class="glass-card">
+            <h2>BCA @ AI & ML Specialization</h2>
+            <h1>Emmanuel Cherian</h1>
+            <p style="opacity: 0.7; letter-spacing: 2px;">Building intelligent digital sanctuaries.</p>
+            
+            <div class="terminal-window">
+                <div class="terminal-header">
+                    <div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div>
+                    <span style="margin-left: 10px; opacity: 0.5;">emmanuel_os — terminal</span>
+                </div>
+                <div class="terminal-body" id="terminal-content">
+                    <div>> System initialized...</div>
+                    <div>> Welcome, visitor. Type 'help' to see available commands.</div>
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 10px;">
+                    <span style="color: var(--accent);">></span>
+                    <input type="text" class="command-input" id="terminal-input" placeholder="Type here..." autofocus>
+                </div>
+            </div>
         </div>
     </section>
 
-    <section id="contact" class="fade-in">
-        <h2>Contact Me</h2>
-        <form action=https://youtube.com/@amsoulnessedition>
-            <input type="text" placeholder="Your Name" required>
-            <input type="email" placeholder="Your Email" required>
-            <textarea placeholder="Your Message" required></textarea>
-            <button type="submit">Send</button>
-        </form>
+    <section id="tech">
+        <div class="glass-card">
+            <h1>The Core</h1>
+            <div style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; margin-top: 30px;">
+                <button class="glow-btn" onmouseover="changeScene('python')">Python</button>
+                <button class="glow-btn" onmouseover="changeScene('ml')">Machine Learning</button>
+                <button class="glow-btn" onmouseover="changeScene('web')">Modern Web</button>
+            </div>
+        </div>
     </section>
 
-    <footer>
-        <p>&copy; 2025 Amsoulness | Built with ❤️</p>
-        <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="UTF-8">
-    <title>You Are Wasting Time</title>
-  </head>
-  <body>
-    <h2>You are wasting your time buddy</h2>
-    <h3>Look Down 👇</h3>
-    <span id="datetime"></span>
-
     <script>
-      
-      function updateDateTime() {
-        
-        const now = new Date();
+        // --- THREE.JS INTERACTIVE SCENE ---
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.getElementById('canvas-container').appendChild(renderer.domElement);
 
-        
-        const currentDateTime = now.toLocaleString();
+        const starGeo = new THREE.BufferGeometry();
+        const stars = new Float32Array(3000 * 3);
+        for(let i=0; i<9000; i++) stars[i] = (Math.random() - 0.5) * 10;
+        starGeo.setAttribute('position', new THREE.BufferAttribute(stars, 3));
+        const starMat = new THREE.PointsMaterial({ size: 0.005, color: 0xffffff });
+        const starMesh = new THREE.Points(starGeo, starMat);
+        scene.add(starMesh);
+        camera.position.z = 3;
 
-        
-        document.querySelector('#datetime').textContent = currentDateTime;
-      }
+        function animate() {
+            requestAnimationFrame(animate);
+            starMesh.rotation.y += 0.001;
+            renderer.render(scene, camera);
+        }
+        animate();
 
-     
-      setInterval(updateDateTime, 1000);
+        // --- TERMINAL LOGIC ---
+        const input = document.getElementById('terminal-input');
+        const content = document.getElementById('terminal-content');
+
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                const cmd = input.value.toLowerCase();
+                const div = document.createElement('div');
+                div.style.color = '#fff';
+                div.innerHTML = `<span style="color: #e5b3a3;">> ${cmd}</span>`;
+                content.appendChild(div);
+
+                const response = document.createElement('div');
+                switch(cmd) {
+                    case 'help': response.innerHTML = "Available: 'about', 'skills', 'clear', 'whoami'"; break;
+                    case 'about': response.innerHTML = "Emmanuel: 2nd Year BCA Student. AI/ML Enthusiast. Design-focused Dev."; break;
+                    case 'skills': response.innerHTML = "Python, Java, Three.js, Neural Networks, UI Design."; break;
+                    case 'whoami': response.innerHTML = "A seeker of logic and beauty."; break;
+                    case 'clear': content.innerHTML = ""; break;
+                    default: response.innerHTML = "Command not recognized. Type 'help'.";
+                }
+                content.appendChild(response);
+                input.value = "";
+                content.scrollTop = content.scrollHeight;
+            }
+        });
+
+        // --- INTERACTIVE MOUSE ELEMENTS ---
+        const cursor = document.getElementById('custom-cursor');
+        document.addEventListener('mousemove', (e) => {
+            cursor.style.left = e.clientX + 'px';
+            cursor.style.top = e.clientY + 'px';
+            
+            // Mouse Parallax for Three.js
+            starMesh.rotation.x = e.clientY * 0.0001;
+            starMesh.rotation.y = e.clientX * 0.0001;
+        });
+
+        // Click interaction: Burst stars
+        document.addEventListener('mousedown', () => {
+            cursor.style.transform = 'scale(2.5)';
+            starMesh.scale.set(1.1, 1.1, 1.1);
+        });
+        document.addEventListener('mouseup', () => {
+            cursor.style.transform = 'scale(1)';
+            starMesh.scale.set(1, 1, 1);
+        });
+
+        function changeScene(type) {
+            if(type === 'python') starMat.color.setHex(0x3776ab);
+            if(type === 'ml') starMat.color.setHex(0xe5b3a3);
+            if(type === 'web') starMat.color.setHex(0x61dbfb);
+        }
     </script>
-  </body>
-</html>
-        <h4>Fuck You Bitch 🖕🏻</h4>
-    </footer>
-
 </body>
 </html>
